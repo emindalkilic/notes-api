@@ -72,17 +72,17 @@ SECRET_KEY=your-secret-key-here
 
 The application consists of 4 services:
 
-   1. web - FastAPI server (port 8000)
+   **1. web** - FastAPI server (port 8000)
 
-   2. db - PostgreSQL database
+   **2. db** - PostgreSQL database
 
-   3. redis - Redis server for message queue
+   **3. redis** - Redis server for message queue
 
-   4. worker - Celery worker for async tasks
+   **4. worker** - Celery worker for async tasks
 
 ## 🎯 Usage Example
 
-1. Register a user:
+**1. Register a user:**
 
 ```bash
 
@@ -92,7 +92,7 @@ curl -X POST "http://localhost:8000/signup" \
 
 ```
 
-2. Login to get JWT token:
+**2. Login to get JWT token:**
 
 ```bash
 
@@ -102,7 +102,7 @@ curl -X POST "http://localhost:8000/login" \
 
 ```
 
-3. Create a note (with AI summarization)
+**3. Create a note (with AI summarization)**
 
 ```bash
 
