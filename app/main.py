@@ -1,11 +1,10 @@
-from app.database import engine, Base
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-# Doğrudan import et - relative import KULLANMA!
-from app.database import get_db
-from app.models import Base, User, Note, UserRole, NoteStatus
+# Database importları
+from app.database import engine, Base
+from app.models import User, Note, UserRole, NoteStatus
 from app import schemas
 from app import auth
 from app.celery_worker import summarize_note_task
@@ -19,12 +18,8 @@ except Exception as e:
 
 app = FastAPI(title="Notes API", version="1.0.0")
 
-# Database bağlantısını kontrol et ve yeniden dene
-import time
-from sqlalchemy.exc import OperationalError
-
 @app.post("/signup", response_model=schemas.User)
-def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def signup(user: schemas.UserCreate, db: Session = Depends(auth.get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -37,7 +32,7 @@ def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return db_user
 
 @app.post("/login")
-def login(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def login(user: schemas.UserCreate, db: Session = Depends(auth.get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
     if not db_user or not auth.verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid credentials")
@@ -49,7 +44,7 @@ def login(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def create_note(
     note: schemas.NoteCreate,
     current_user: User = Depends(auth.get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(auth.get_db)
 ):
     db_note = Note(
         raw_text=note.raw_text,
@@ -69,7 +64,7 @@ def create_note(
 def get_note(
     note_id: int,
     current_user: User = Depends(auth.get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(auth.get_db)
 ):
     query = db.query(Note).filter(Note.id == note_id)
     if current_user.role != UserRole.ADMIN:
@@ -84,7 +79,7 @@ def get_note(
 @app.get("/notes", response_model=List[schemas.Note])
 def get_notes(
     current_user: User = Depends(auth.get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(auth.get_db)
 ):
     query = db.query(Note)
     if current_user.role != UserRole.ADMIN:
