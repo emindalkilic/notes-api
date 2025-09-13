@@ -113,6 +113,15 @@ curl -X POST "http://localhost:8000/notes" \
 
 ```
 
+## 🌐 Live Demo
+
+**API URL:** https://notes-api-nphd.onrender.com  
+**Documentation:** https://notes-api-nphd.onrender.com/docs
+
+## 🎥 Demo Video
+
+Watch the Loom demo: .... 
+
 ## 📄 License
 
 This project is created for assignment purposes.
