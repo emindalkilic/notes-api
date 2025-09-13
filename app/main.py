@@ -1,13 +1,21 @@
+from app.database import engine, Base
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
 # Doğrudan import et - relative import KULLANMA!
-from app.database import get_db, engine
+from app.database import get_db
 from app.models import Base, User, Note, UserRole, NoteStatus
 from app import schemas
 from app import auth
 from app.celery_worker import summarize_note_task
+
+# Database tablolarını oluştur
+try:
+    Base.metadata.create_all(bind=engine)
+    print("✅ Database tabloları oluşturuldu!")
+except Exception as e:
+    print(f"❌ Database hatası: {e}")
 
 app = FastAPI(title="Notes API", version="1.0.0")
 
@@ -87,11 +95,3 @@ def get_notes(
 @app.get("/")
 def read_root():
     return {"message": "Notes API is running!"}
-
-@app.on_event("startup")
-async def startup_event():
-    try:
-        Base.metadata.create_all(bind=engine)
-        print("✅ Database bağlantısı başarılı!")
-    except Exception as e:
-        print(f"❌ Database bağlantı hatası: {e}")

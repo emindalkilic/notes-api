@@ -2,11 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 
-# Render otomatik olarak DATABASE_URL environment variable'ını ekliyor
+# Render'ın otomatik verdiği DATABASE_URL'i kullan
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Eğer DATABASE_URL yoksa local development için fallback
 if not DATABASE_URL:
+    # Eğer DATABASE_URL yoksa (local development için)
     DATABASE_URL = "postgresql://user:password@localhost:5432/notesdb"
 
 engine = create_engine(DATABASE_URL)
