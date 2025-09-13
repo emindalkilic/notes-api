@@ -2,7 +2,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/notesdb?connect_timeout=10")
+# Render otomatik olarak DATABASE_URL environment variable'ını ekliyor
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Eğer DATABASE_URL yoksa local development için fallback
+if not DATABASE_URL:
+    DATABASE_URL = "postgresql://user:password@localhost:5432/notesdb"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

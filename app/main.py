@@ -15,26 +15,6 @@ app = FastAPI(title="Notes API", version="1.0.0")
 import time
 from sqlalchemy.exc import OperationalError
 
-def wait_for_db():
-    max_retries = 5
-    retry_delay = 2
-    
-    for attempt in range(max_retries):
-        try:
-            Base.metadata.create_all(bind=engine)
-            print("Database bağlantısı başarılı!")
-            return
-        except OperationalError:
-            if attempt < max_retries - 1:
-                print(f"Database hazır değil, {retry_delay} saniye bekleyip tekrar deneyeceğim... ({attempt + 1}/{max_retries})")
-                time.sleep(retry_delay)
-            else:
-                print("Database bağlantısı başarısız!")
-                raise
-
-# Database bağlantısını bekle
-wait_for_db()
-
 @app.post("/signup", response_model=schemas.User)
 def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
@@ -107,3 +87,11 @@ def get_notes(
 @app.get("/")
 def read_root():
     return {"message": "Notes API is running!"}
+
+@app.on_event("startup")
+async def startup_event():
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database bağlantısı başarılı!")
+    except Exception as e:
+        print(f"❌ Database bağlantı hatası: {e}")
