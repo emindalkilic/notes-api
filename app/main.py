@@ -2,14 +2,12 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-# Database importları - get_db'yi EKLE!
 from app.database import engine, Base, get_db
 from app.models import User, Note, UserRole, NoteStatus
 from app import schemas
 from app import auth
 from app.celery_worker import summarize_note_task
 
-# Database tablolarını oluştur
 try:
     Base.metadata.create_all(bind=engine)
     print("✅ Database tabloları oluşturuldu!")
@@ -24,7 +22,6 @@ def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Şifreleme yapma, direkt kaydet
     db_user = User(email=user.email, hashed_password=user.password)
     db.add(db_user)
     db.commit()
@@ -33,7 +30,6 @@ def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/login")
 def login(user: schemas.UserCreate):
-    # HER ZAMAN AYNI TOKEN'I DÖNDÜR
     return {"access_token": "test-token-123", "token_type": "bearer"}
 
 @app.post("/notes", response_model=schemas.Note)
@@ -44,14 +40,13 @@ def create_note(
 ):
     db_note = Note(
         raw_text=note.raw_text,
-        user_id=current_user["id"],  # dict olduğu için ["id"] kullan
+        user_id=current_user["id"],
         status=NoteStatus.QUEUED
     )
     db.add(db_note)
     db.commit()
     db.refresh(db_note)
     
-    # Background task'i başlat
     summarize_note_task.delay(db_note.id)
     
     return db_note
