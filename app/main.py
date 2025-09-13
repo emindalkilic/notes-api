@@ -2,8 +2,8 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-# Database importları
-from app.database import engine, Base
+# Database importları - get_db'yi EKLE!
+from app.database import engine, Base, get_db
 from app.models import User, Note, UserRole, NoteStatus
 from app import schemas
 from app import auth
@@ -18,7 +18,6 @@ except Exception as e:
 
 app = FastAPI(title="Notes API", version="1.0.0")
 
-# signup fonksiyonunu değiştir:
 @app.post("/signup", response_model=schemas.User)
 def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
@@ -40,12 +39,12 @@ def login(user: schemas.UserCreate):
 @app.post("/notes", response_model=schemas.Note)
 def create_note(
     note: schemas.NoteCreate,
-    current_user: User = Depends(auth.get_current_user_simple),
-    db: Session = Depends(auth.get_db)
+    current_user: dict = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
 ):
     db_note = Note(
         raw_text=note.raw_text,
-        user_id=current_user.id,
+        user_id=current_user["id"],  # dict olduğu için ["id"] kullan
         status=NoteStatus.QUEUED
     )
     db.add(db_note)
@@ -60,12 +59,12 @@ def create_note(
 @app.get("/notes/{note_id}", response_model=schemas.Note)
 def get_note(
     note_id: int,
-    current_user: User = Depends(auth.get_current_user_simple),
-    db: Session = Depends(auth.get_db)
+    current_user: dict = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
 ):
     query = db.query(Note).filter(Note.id == note_id)
-    if current_user.role != UserRole.ADMIN:
-        query = query.filter(Note.user_id == current_user.id)
+    if current_user["role"] != UserRole.ADMIN:
+        query = query.filter(Note.user_id == current_user["id"])
     
     db_note = query.first()
     if not db_note:
@@ -75,12 +74,12 @@ def get_note(
 
 @app.get("/notes", response_model=List[schemas.Note])
 def get_notes(
-    current_user: User = Depends(auth.get_current_user_simple),
-    db: Session = Depends(auth.get_db)
+    current_user: dict = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
 ):
     query = db.query(Note)
-    if current_user.role != UserRole.ADMIN:
-        query = query.filter(Note.user_id == current_user.id)
+    if current_user["role"] != UserRole.ADMIN:
+        query = query.filter(Note.user_id == current_user["id"])
     
     return query.all()
 
