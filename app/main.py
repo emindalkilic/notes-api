@@ -43,7 +43,7 @@ def login(user: schemas.UserCreate, db: Session = Depends(auth.get_db)):
 @app.post("/notes", response_model=schemas.Note)
 def create_note(
     note: schemas.NoteCreate,
-    current_user: User = Depends(auth.get_current_user),
+    current_user: User = Depends(auth.get_current_user_simple),
     db: Session = Depends(auth.get_db)
 ):
     db_note = Note(
@@ -63,7 +63,7 @@ def create_note(
 @app.get("/notes/{note_id}", response_model=schemas.Note)
 def get_note(
     note_id: int,
-    current_user: User = Depends(auth.get_current_user),
+    current_user: User = Depends(auth.get_current_user_simple),
     db: Session = Depends(auth.get_db)
 ):
     query = db.query(Note).filter(Note.id == note_id)
@@ -78,7 +78,7 @@ def get_note(
 
 @app.get("/notes", response_model=List[schemas.Note])
 def get_notes(
-    current_user: User = Depends(auth.get_current_user),
+    current_user: User = Depends(auth.get_current_user_simple),
     db: Session = Depends(auth.get_db)
 ):
     query = db.query(Note)
