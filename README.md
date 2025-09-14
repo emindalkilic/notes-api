@@ -120,7 +120,7 @@ curl -X POST "http://localhost:8000/notes" \
 
 ## 🎥 Demo Video
 
-Watch the Loom demo: .... 
+Watch the Loom demo: https://www.loom.com/share/5ee0ac6e72c4433a85aac3cfe4a596df
 
 ## 📄 License
 
